@@ -12,6 +12,7 @@ export default function QrReader() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Si ya había un scanner, lo limpiamos
     if (scannerRef.current) {
       try {
         scannerRef.current.clear();
@@ -25,7 +26,7 @@ export default function QrReader() {
       {
         fps: 15,
         qrbox: { width: 280, height: 280 },
-        rememberLastUsedCamera: true
+        rememberLastUsedCamera: true,
       },
       false
     );
@@ -34,7 +35,7 @@ export default function QrReader() {
       (decodedText) => {
         setCodigoFinal(decodedText);
         setMensaje("QR detectado automáticamente ✅");
-        // Si quieres detener la cámara al detectar:
+        // si quieres detener cámara al detectar:
         scanner.clear().catch((e) => console.error("clear error", e));
       },
       () => {
@@ -55,22 +56,37 @@ export default function QrReader() {
 
   function usarCodigoManual() {
     if (!codigoManual.trim()) return;
-    setCodigoFinal(codigoManual.trim());
+    const limpio = codigoManual.trim();
+    setCodigoFinal(limpio);
     setMensaje("Código ingresado manualmente ✅");
   }
 
   return (
-    <div style={{ padding: 16 }}>
+    <div
+      style={{
+        padding: 16,
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        maxWidth: 420,
+        margin: "0 auto",
+      }}
+    >
       <h1 style={{ marginBottom: 8 }}>Escanear etiqueta</h1>
+
       <p style={{ fontSize: 14, marginBottom: 8 }}>
-        1) Intenta escanear el QR con la cámara.<br />
-        2) Si no funciona, usa Google Lens, copia el código y pégalo abajo.
+        1) Intenta escanear el QR con la cámara. <br />
+        2) Si no lo detecta, usa Google Lens, copia el código y pégalo abajo.
       </p>
 
       {/* Lector con cámara */}
       <div
         id="qr-reader"
-        style={{ width: "100%", maxWidth: 400, marginBottom: 16 }}
+        style={{
+          width: "100%",
+          maxWidth: 400,
+          marginBottom: 16,
+          borderRadius: 8,
+          overflow: "hidden",
+        }}
       />
 
       {/* Entrada manual */}
@@ -78,7 +94,7 @@ export default function QrReader() {
         style={{
           borderTop: "1px solid #ddd",
           paddingTop: 12,
-          marginTop: 8
+          marginTop: 8,
         }}
       >
         <p style={{ fontSize: 14, marginBottom: 4 }}>
@@ -90,10 +106,11 @@ export default function QrReader() {
           placeholder="Ej: LLE-1764031260112"
           style={{
             width: "100%",
-            padding: 8,
+            padding: 10,
             borderRadius: 6,
             border: "1px solid #aaa",
-            marginBottom: 8
+            marginBottom: 8,
+            fontSize: 14,
           }}
         />
         <button
@@ -105,7 +122,9 @@ export default function QrReader() {
             border: "none",
             background: "#0284c7",
             color: "white",
-            fontWeight: 600
+            fontWeight: 600,
+            fontSize: 14,
+            cursor: "pointer",
           }}
         >
           Usar código
