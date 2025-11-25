@@ -16,21 +16,16 @@ type Envio = {
   porCobrar: boolean;
   monto: number | null;
   estado: EstadoEnvio;
-  // Datos entrega
   nombreReceptor?: string;
   rutReceptor?: string;
   motivoFalla?: string;
-  // COD
   formaPagoCod?: FormaPagoCod;
   montoCobradoEfectivo?: number | null;
 };
 
 const STORAGE_KEY = "envios";
 
-/**
- * Componente lector de QR usando la API nativa BarcodeDetector.
- * Muestra la cámara y cuando detecta un QR, llama a onResult(texto).
- */
+/** Lector de QR usando BarcodeDetector (API nativa). */
 function QRReader({ onResult }: { onResult: (text: string) => void }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -38,7 +33,7 @@ function QRReader({ onResult }: { onResult: (text: string) => void }) {
     let activo = true;
     let stream: MediaStream | null = null;
 
-    async function startCamera() {
+    const startCamera = async () => {
       try {
         if (!("BarcodeDetector" in window)) {
           alert(
@@ -48,7 +43,8 @@ function QRReader({ onResult }: { onResult: (text: string) => void }) {
         }
 
         // @ts-ignore
-        const BarcodeDetectorCtor = window.BarcodeDetector as typeof BarcodeDetector;
+        const BarcodeDetectorCtor = window
+          .BarcodeDetector as typeof BarcodeDetector;
 
         const detector = new BarcodeDetectorCtor({
           formats: ["qr_code"],
@@ -63,7 +59,7 @@ function QRReader({ onResult }: { onResult: (text: string) => void }) {
           await videoRef.current.play();
         }
 
-        async function scanLoop() {
+        const scanLoop = async () => {
           if (!activo || !videoRef.current) return;
 
           try {
@@ -82,14 +78,14 @@ function QRReader({ onResult }: { onResult: (text: string) => void }) {
           }
 
           requestAnimationFrame(scanLoop);
-        }
+        };
 
         scanLoop();
       } catch (e) {
         console.error(e);
         alert("No se pudo acceder a la cámara.");
       }
-    }
+    };
 
     startCamera();
 
@@ -136,15 +132,12 @@ export default function RepartidorPage() {
   const [rutReceptor, setRutReceptor] = useState("");
   const [motivoFalla, setMotivoFalla] = useState("");
 
-  // COD
   const [compradorPago, setCompradorPago] = useState<"SI" | "NO" | "">("");
   const [formaPagoCod, setFormaPagoCod] = useState<FormaPagoCod>("NINGUNO");
   const [montoEfectivo, setMontoEfectivo] = useState<string>("");
 
-  // Mostrar / ocultar escáner
   const [mostrarQR, setMostrarQR] = useState(false);
 
-  // Proteger por rol y cargar envíos desde localStorage
   useEffect(() => {
     const role = window.localStorage.getItem("role");
     if (role === "REPARTIDOR" || role === "ADMIN") {
@@ -165,7 +158,6 @@ export default function RepartidorPage() {
     }
   }, [router]);
 
-  // Guardar cambios en localStorage cada vez que cambian los envíos
   useEffect(() => {
     if (!allowed) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envios));
@@ -194,7 +186,6 @@ export default function RepartidorPage() {
       return;
     }
 
-    // Si es por cobrar, validar flujo de pago
     let nuevaFormaPago: FormaPagoCod = "NINGUNO";
     let montoEfvo: number | null = null;
 
@@ -211,7 +202,6 @@ export default function RepartidorPage() {
         return;
       }
 
-      // compradorPago === "SI"
       if (formaPagoCod === "NINGUNO") {
         alert("Debes indicar si pagó con transferencia o efectivo.");
         return;
@@ -314,7 +304,6 @@ export default function RepartidorPage() {
       </div>
 
       <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-        {/* Lista de envíos en ruta */}
         <div style={{ flex: 1 }}>
           <h2>Envíos en ruta</h2>
           {enviosEnRuta.length === 0 ? (
@@ -354,7 +343,6 @@ export default function RepartidorPage() {
           )}
         </div>
 
-        {/* Panel de acción sobre un envío */}
         <div style={{ flex: 1 }}>
           <h2>Acción sobre envío seleccionado</h2>
           {!envioSeleccionado ? (
@@ -572,7 +560,6 @@ export default function RepartidorPage() {
         </div>
       </div>
 
-      {/* Resumen de entregados / fallidos */}
       <div style={{ marginTop: 30 }}>
         <h2>Envíos registrados (entregados / fallidos)</h2>
         {enviosTerminados.length === 0 ? (
@@ -626,7 +613,6 @@ export default function RepartidorPage() {
         )}
       </div>
 
-      {/* MODAL LECTOR QR */}
       {mostrarQR && (
         <div
           style={{
